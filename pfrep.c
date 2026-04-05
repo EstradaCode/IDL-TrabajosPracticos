@@ -58,7 +58,10 @@ void q78_to_hex(int16_t val, char* out) {
     out[5] = hex_chars[uval & 0xF];         // (LSB)
     out[6] = '\0';
 }
-
+/**
+ * Convierte un string "±.ffff" a representación Q15 (16 bits)
+ * 
+ */
 int16_t str_to_q15(const char* s) {
     int32_t parte_entera = 0;
     uint32_t parte_fraccionaria = 0;
@@ -92,6 +95,10 @@ int16_t str_to_q15(const char* s) {
     int16_t resultado = (int16_t)res_abs;
     return (signo == -1) ? -resultado : resultado;
 }
+/**
+ * Convierte un string "±eee.ffff" a representación Q16.15 (32 bits)
+ * 
+ */
 int32_t str_to_q1615(const char* s) {
     int32_t parte_entera = 0;
     uint64_t parte_fraccionaria = 0; 
