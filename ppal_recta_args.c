@@ -2,7 +2,34 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "pfrep.h"
+ // Procesa el string y valida que la parte entera esté entre los límites.
+ //Retorna 1 si es válido, 0 si falla.
+int validar_str(const char* s, int32_t sup, int32_t inf, int32_t* resultado_entero) {
+    int64_t acumulador = 0;
+    int signo = 1;
+    int i = 0;
 
+    if (s[0] == '-') {
+        signo = -1;
+        i = 1;
+    }
+
+    if (s[i] == '\0' || s[i] == '.') return 0;
+
+    while (s[i] != '\0' && s[i] != '.') {
+        if (s[i] < '0' || s[i] > '9') return 0;
+        
+        acumulador = acumulador * 10 + (s[i] - '0');
+        
+        // Validación en tiempo real para no desbordar el int64_t 
+        if ((acumulador * signo) > sup || (acumulador * signo) < inf) return 0;
+        
+        i++;
+    }
+
+    *resultado_entero = (int32_t)(acumulador * signo);
+    return 1;
+}
 // Función para obtener el string decimal (modificada para devolverlo o imprimirlo limpio)
 void fp32_to_decimal(int32_t q_val) {
     int32_t entera = q_val >> 15;
@@ -19,17 +46,41 @@ void fp32_to_decimal(int32_t q_val) {
     if (negativo && entera == 0) printf("-0.%05u", fracc_decimal); // no interpreta el negativo de una forma escalada en la impresión, caso 0.xxxx
     else printf("%d.%05u", (int)entera, fracc_decimal);
 }
- // argv[1] => m ; argv[2]=> b; argv[3]=> x || out => y 
-int main(int argc, char *argv[]) {
-    // se utilizan parametros de entrada como entrada (argc/argv)
-    if (argc < 4) {
-        return 1; // si no hay parametros necesarios exit -1
+ // 
+int main() {
+    char str_m[64], str_b[64], str_x[64];
+    int32_t m_entero, b_entero, x_entero;
+
+    printf("=== Representación recta en punto fijo Q(16,15) - GRUPO07 - IDL ===\n");
+
+    // Validacion de m (Límites -1 a 0 para los enteros)
+    printf("m [-1, 1): ");
+    scanf("%63s", str_m);
+    if (!validar_str(str_m, 0, -1, &m_entero)) {
+        // Caso borde: si el string es "0.99", la parte entera es 0, es válido.
+        // Solo falla si la parte entera es >= 1 o < -1.
+        printf("Error: m fuera de rango.\n"); return 1;
+    }
+
+    // Validacion de b (Límites -128 a 127)
+    printf("b [-128, 128): ");
+    scanf("%63s", str_b);
+    if (!validar_str(str_b, 127, -128, &b_entero)) {
+        printf("Error: b fuera de rango.\n"); return 1;
+    }
+
+    // Validacion de x (Límites -65407 a 65407)
+    printf("x [-65407, 65407]: ");
+    scanf("%63s", str_x);
+    if (!validar_str(str_x, 65407, -65407, &x_entero)) {
+        printf("Error: x fuera de rango.\n");
+        return 1;
     }
 
     // leo mis argumentos enviados
-    int16_t m = str_to_q15(argv[1]);
-    int16_t b_q78 = str_to_q78(argv[2]);
-    int32_t x = str_to_q1615(argv[3]);
+    int16_t m = str_to_q15(str_m);
+    int16_t b_q78 = str_to_q78(str_b);
+    int32_t x = str_to_q1615(str_x);
 
     // Cálculo de y = mx + b ; traduzco todo al mismo formato
     int32_t b_32 = (int32_t)b_q78 << 7; 

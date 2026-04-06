@@ -116,10 +116,10 @@ int32_t str_to_q1615(const char* s) {
         } else break;
     }
 
-    if (parte_entera > 32767) {
-        fprintf(stderr, "Error: x fuera de rango para Q16.15\n");
-        exit(1);
-    }
+//    if (parte_entera > 32767) {
+ //       fprintf(stderr, "Error: x fuera de rango para Q16.15\n");
+  //      exit(1);
+   // }
 
     if (s[i] == '.') {
         i++;
