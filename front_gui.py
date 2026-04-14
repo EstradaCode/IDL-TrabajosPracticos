@@ -1,7 +1,18 @@
 import customtkinter as ctk
 import subprocess
+import os      
+import sys     
+import platform
 from tkinter import messagebox
-
+def get_resource_path(relative_path):
+    """ Obtiene la ruta del binario, compatible con desarrollo y PyInstaller """
+    if getattr(sys, 'frozen', False):
+        # Si corre .exe, la carpeta temporal es sys._MEIPASS
+        base_path = sys._MEIPASS
+    else:
+        # Si corre en modo normal (python front_gui.py)
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, relative_path)
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -116,8 +127,12 @@ class App(ctk.CTk):
         
         m, b, x_in = vals
         try:
-            # Llamada al binario de C
-            res = subprocess.check_output(['./pf_bin', str(m), str(b), str(x_in)], text=True)
+            # Llamada al binario 
+
+            nombre_binario = "pf_bin.exe" if platform.system() == "Windows" else "pf_bin"
+            ruta_binario = get_resource_path(nombre_binario)
+
+            res = subprocess.check_output([ruta_binario, str(m), str(b), str(x_in)], text=True)
             y_hex, y_dec_str = res.strip().split(',')
             y_dec = float(y_dec_str)
 
